@@ -56,6 +56,7 @@ describe("task routes", () => {
         description: "created through the API",
         dueDate: "2026-11-03",
         priority: "LOW",
+        tags: ["api", "work"],
       })
       .expect(201);
 
@@ -65,6 +66,7 @@ describe("task routes", () => {
       description: "created through the API",
       priority: "LOW",
       completed: false,
+      tags: ["api", "work"],
     });
     expect(createdTask.id).toEqual(expect.any(String));
 
@@ -73,6 +75,14 @@ describe("task routes", () => {
       activeResponse.body.tasks.some((task: { id: string }) => task.id === createdTask.id)
     ).toBe(true);
 
+    const taggedResponse = await request(app)
+      .get("/tasks")
+      .query({ status: "all", tag: "work" })
+      .expect(200);
+    expect(taggedResponse.body.tasks.map((task: { id: string }) => task.id)).toContain(
+      createdTask.id
+    );
+
     const patchResponse = await request(app)
       .patch(`/tasks/${createdTask.id}`)
       .send({
@@ -80,6 +90,7 @@ describe("task routes", () => {
         description: null,
         dueDate: null,
         priority: "HIGH",
+        tags: ["api", "done"],
         completed: true,
       })
       .expect(200);
@@ -91,6 +102,7 @@ describe("task routes", () => {
       dueDate: null,
       priority: "HIGH",
       completed: true,
+      tags: ["api", "done"],
     });
 
     const completedResponse = await request(app)
@@ -121,11 +133,27 @@ describe("task routes", () => {
       code: "VALIDATION_ERROR",
     });
 
+    const invalidTagsResponse = await request(app)
+      .post("/tasks")
+      .send({ title: `${routeTestPrefix}invalid-tags`, tags: ["valid", "bad/tag"] })
+      .expect(400);
+    expect(invalidTagsResponse.body.error).toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+
     const invalidListResponse = await request(app)
       .get("/tasks")
       .query({ status: "done" })
       .expect(400);
     expect(invalidListResponse.body.error).toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+
+    const invalidTagFilterResponse = await request(app)
+      .get("/tasks")
+      .query({ tag: "bad/tag" })
+      .expect(400);
+    expect(invalidTagFilterResponse.body.error).toMatchObject({
       code: "VALIDATION_ERROR",
     });
 
@@ -150,6 +178,7 @@ describe("task routes", () => {
       .field("description", "created with an image")
       .field("dueDate", "2026-11-04")
       .field("priority", "HIGH")
+      .field("tags", "image, upload, image")
       .attach("image", Buffer.from("first-image"), {
         contentType: "image/png",
         filename: "user-filename.png",
@@ -162,6 +191,7 @@ describe("task routes", () => {
       imageSize: Buffer.byteLength("first-image"),
       imageUrl: "https://signed.test/tasks/images/mock-1.png",
       title: `${routeTestPrefix}image-create`,
+      tags: ["image", "upload"],
     });
     expect(uploadTaskImageMock).toHaveBeenCalledWith({
       buffer: expect.any(Buffer),
@@ -172,6 +202,7 @@ describe("task routes", () => {
     const replaceResponse = await request(app)
       .patch(`/tasks/${createdTask.id}`)
       .field("title", `${routeTestPrefix}image-replaced`)
+      .field("tags", "replacement, upload")
       .attach("image", Buffer.from("second-image"), {
         contentType: "image/webp",
         filename: "another-user-filename.webp",
@@ -183,6 +214,7 @@ describe("task routes", () => {
       imageSize: Buffer.byteLength("second-image"),
       imageUrl: "https://signed.test/tasks/images/mock-2.png",
       title: `${routeTestPrefix}image-replaced`,
+      tags: ["replacement", "upload"],
     });
     expect(deleteTaskImageMock).toHaveBeenCalledWith("tasks/images/mock-1.png");
 

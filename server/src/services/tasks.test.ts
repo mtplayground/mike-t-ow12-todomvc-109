@@ -21,6 +21,7 @@ describe("task service", () => {
       description: "service active task",
       dueDate: new Date("2026-11-01T00:00:00.000Z"),
       priority: TaskPriority.MEDIUM,
+      tags: ["service", "urgent"],
     });
     const completedTask = await createTask({
       title: `${serviceTestPrefix}completed`,
@@ -40,6 +41,9 @@ describe("task service", () => {
     const completedTasks = (await listTasks("completed")).filter((task) =>
       task.title.startsWith(serviceTestPrefix)
     );
+    const urgentTasks = (await listTasks("all", "urgent")).filter((task) =>
+      task.title.startsWith(serviceTestPrefix)
+    );
 
     expect(allTasks.map((task) => task.id)).toEqual(
       expect.arrayContaining([activeTask.id, completedTask.id])
@@ -49,13 +53,17 @@ describe("task service", () => {
       id: activeTask.id,
       completed: false,
       priority: TaskPriority.MEDIUM,
+      tags: ["service", "urgent"],
     });
+    expect(completedTask.tags).toEqual([]);
     expect(completedTasks).toHaveLength(1);
     expect(completedTasks[0]).toMatchObject({
       id: completedTask.id,
       completed: true,
       priority: TaskPriority.HIGH,
+      tags: [],
     });
+    expect(urgentTasks.map((task) => task.id)).toEqual([activeTask.id]);
   });
 
   it("updates and deletes tasks", async () => {
@@ -64,6 +72,7 @@ describe("task service", () => {
       description: "before",
       dueDate: new Date("2026-11-02T00:00:00.000Z"),
       priority: TaskPriority.LOW,
+      tags: ["before", "service"],
     });
 
     const updatedTask = await updateTask(task.id, {
@@ -71,6 +80,7 @@ describe("task service", () => {
       description: null,
       dueDate: null,
       priority: TaskPriority.HIGH,
+      tags: ["after", "service"],
       completed: true,
     });
 
@@ -80,6 +90,7 @@ describe("task service", () => {
       description: null,
       dueDate: null,
       priority: TaskPriority.HIGH,
+      tags: ["after", "service"],
       completed: true,
     });
 

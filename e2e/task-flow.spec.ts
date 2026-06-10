@@ -11,6 +11,7 @@ test("creates, completes, filters, and deletes a task", async ({ page, request }
   await page.getByLabel("Description").fill("Created by the happy-path E2E flow");
   await page.getByLabel("Due date").fill("2026-12-31");
   await page.getByLabel("Priority").selectOption("HIGH");
+  await page.getByLabel("Tags").fill("home, urgent, home");
   const createResponsePromise = page.waitForResponse(
     (response) => response.url().includes("/tasks") && response.request().method() === "POST"
   );
@@ -22,6 +23,18 @@ test("creates, completes, filters, and deletes a task", async ({ page, request }
   await expect(createdTask).toBeVisible();
   await expect(createdTask.getByText("High")).toBeVisible();
   await expect(createdTask.getByText("Dec 31, 2026")).toBeVisible();
+  await expect(createdTask.getByText("#home")).toBeVisible();
+  await expect(createdTask.getByText("#urgent")).toBeVisible();
+
+  await createdTask.getByRole("button", { name: "Edit" }).click();
+  await expect(page.getByLabel("Tags")).toHaveValue("home, urgent");
+  await page.getByLabel("Tags").fill("home, reviewed");
+  const tagUpdateResponsePromise = waitForTaskResponse(page, "PATCH");
+  await page.getByRole("button", { name: "Save changes" }).click();
+  const tagUpdateResponse = await tagUpdateResponsePromise;
+  expect(tagUpdateResponse.ok()).toBe(true);
+  await expect(createdTask.getByText("#reviewed")).toBeVisible();
+  await expect(createdTask.getByText("#urgent")).toHaveCount(0);
 
   await createdTask.getByRole("checkbox", { name: `Mark completed: ${title}` }).click();
   await expect(createdTask.getByText("Completed")).toBeVisible();

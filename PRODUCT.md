@@ -7,10 +7,10 @@ todomvc-030 is a full-stack task management app built as a TypeScript monorepo. 
 ## What It Does
 
 - Create, list, edit, complete, and delete tasks.
-- Track task title, optional description, optional due date, priority, completion state, and timestamps.
+- Track task title, optional description, optional due date, priority, tags, completion state, and timestamps.
 - Attach an optional image to a task, preview it in the form, show thumbnails in the list, replace it, or remove it.
-- Filter tasks by All, Active, and Completed.
-- Show task metadata in the UI, including due date, priority, status, and image preview.
+- Filter tasks by All, Active, Completed, and optional tag.
+- Show task metadata in the UI, including due date, priority, status, tag chips, and image preview.
 - Provide optimistic UI updates for complete toggles and deletes.
 
 ## Architecture
@@ -26,9 +26,9 @@ todomvc-030 is a full-stack task management app built as a TypeScript monorepo. 
 ## API Surface
 
 - `GET /health` returns API health.
-- `GET /tasks?status=all|active|completed` lists tasks.
-- `POST /tasks` creates a task using JSON or `multipart/form-data` with an optional `image` file.
-- `PATCH /tasks/:id` updates task fields, completion state, image replacement, or image removal.
+- `GET /tasks?status=all|active|completed&tag=tag-name` lists tasks with optional tag filtering.
+- `POST /tasks` creates a task using JSON or `multipart/form-data` with optional `tags` and optional `image` file.
+- `PATCH /tasks/:id` updates task fields, tags, completion state, image replacement, or image removal.
 - `DELETE /tasks/:id` deletes a task and cleans up its image object when present.
 
 ## Conventions
@@ -45,7 +45,6 @@ todomvc-030 is a full-stack task management app built as a TypeScript monorepo. 
 
 ## Test Coverage
 
-- Backend service and route tests cover CRUD, filtering, and validation errors.
-- Backend service and route tests cover CRUD, filtering, validation errors, image upload metadata, and image cleanup paths.
-- Frontend component tests cover list rendering, filters, forms, image preview/removal, toggles, and deletes.
-- Playwright E2E covers the core task flow plus image upload validation, upload, thumbnail rendering, replacement, removal, and delete flow.
+- Backend service and route tests cover CRUD, status/tag filtering, tag validation, image upload metadata, multipart tags, and image cleanup paths.
+- Frontend component tests cover list rendering, tag chips, filters, forms, tag normalization/preload, image preview/removal, toggles, and deletes.
+- Playwright E2E covers the core tagged task flow plus image upload validation, upload, thumbnail rendering, replacement, removal, and delete flow.
