@@ -96,6 +96,7 @@ export function TaskForm({
         ...(selectedImage ? { imageFile: selectedImage } : {}),
         priority: values.priority,
         ...(task && removeImage ? { removeImage: true } : {}),
+        tags: task?.tags ?? [],
         title,
       });
     } catch {
