@@ -15,6 +15,7 @@ export interface CreateTaskInput {
   readonly dueDate: Date | null;
   readonly image?: UploadedImageMetadata | null;
   readonly priority: TaskPriority;
+  readonly tags?: readonly string[];
   readonly title: string;
 }
 
@@ -25,6 +26,7 @@ export interface UpdateTaskInput {
   readonly image?: UploadedImageMetadata;
   readonly priority?: TaskPriority;
   readonly removeImage?: boolean;
+  readonly tags?: readonly string[];
   readonly title?: string;
 }
 
@@ -38,6 +40,7 @@ export interface TaskDto {
   readonly imageSize: number | null;
   readonly imageUrl: string | null;
   readonly priority: TaskPriority;
+  readonly tags: readonly string[];
   readonly title: string;
   readonly updatedAt: string;
 }
@@ -52,6 +55,7 @@ export async function createTask(input: CreateTaskInput): Promise<TaskDto> {
       imageSize: input.image?.imageSize ?? null,
       imageUrl: input.image?.imageUrl ?? null,
       priority: input.priority,
+      tags: [...(input.tags ?? [])],
       title: input.title,
     },
   });
@@ -59,9 +63,12 @@ export async function createTask(input: CreateTaskInput): Promise<TaskDto> {
   return toTaskDto(task);
 }
 
-export async function listTasks(status: TaskStatusFilter): Promise<TaskDto[]> {
+export async function listTasks(status: TaskStatusFilter, tag?: string): Promise<TaskDto[]> {
   const tasks = await prisma.task.findMany({
-    where: toStatusWhere(status),
+    where: {
+      ...toStatusWhere(status),
+      ...(tag ? { tags: { has: tag } } : {}),
+    },
     orderBy: [{ completed: "asc" }, { createdAt: "desc" }],
   });
 
@@ -86,6 +93,10 @@ export async function updateTask(id: string, input: UpdateTaskInput): Promise<Ta
 
   if (input.priority !== undefined) {
     data.priority = input.priority;
+  }
+
+  if (input.tags !== undefined) {
+    data.tags = [...input.tags];
   }
 
   if (input.title !== undefined) {
@@ -165,6 +176,7 @@ async function toTaskDto(task: Task): Promise<TaskDto> {
     imageSize: task.imageSize,
     imageUrl: task.imageKey ? await createSignedTaskImageUrl(task.imageKey) : null,
     priority: task.priority,
+    tags: task.tags,
     title: task.title,
     updatedAt: task.updatedAt.toISOString(),
   };
