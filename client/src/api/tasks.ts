@@ -13,6 +13,7 @@ export interface Task {
   readonly imageSize: number | null;
   readonly imageUrl: string | null;
   readonly priority: TaskPriority;
+  readonly tags: string[];
   readonly title: string;
   readonly updatedAt: string;
 }
@@ -23,6 +24,7 @@ export interface TaskFormInput {
   readonly imageFile?: File;
   readonly priority: TaskPriority;
   readonly removeImage?: boolean;
+  readonly tags: string[];
   readonly title: string;
 }
 
@@ -33,6 +35,7 @@ export interface TaskUpdateInput {
   readonly imageFile?: File;
   readonly priority?: TaskPriority;
   readonly removeImage?: boolean;
+  readonly tags?: string[];
   readonly title?: string;
 }
 
@@ -55,9 +58,13 @@ export async function createTask(input: TaskFormInput): Promise<Task> {
 
 export async function getTasks(
   status: TaskStatusFilter,
-  options: { readonly signal?: AbortSignal } = {}
+  options: { readonly signal?: AbortSignal; readonly tag?: string } = {}
 ): Promise<Task[]> {
   const params = new URLSearchParams({ status });
+
+  if (options.tag) {
+    params.set("tag", options.tag);
+  }
   const response = await apiRequest<ListTasksResponse>(`/tasks?${params.toString()}`, {
     signal: options.signal,
   });
@@ -93,6 +100,7 @@ function toTaskRequestBody(input: TaskFormInput | TaskUpdateInput): FormData | o
   appendFormField(formData, "priority", input.priority);
   appendFormField(formData, "completed", "completed" in input ? input.completed : undefined);
   appendFormField(formData, "removeImage", input.removeImage);
+  appendFormField(formData, "tags", input.tags?.join(","));
   formData.append("image", input.imageFile);
 
   return formData;
