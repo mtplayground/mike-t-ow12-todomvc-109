@@ -22,6 +22,7 @@ model Task {
   imageUrl         String?      @map("image_url")
   imageContentType String?      @map("image_content_type")
   imageSize        Int?         @map("image_size")
+  tags             String[]     @default([])
   priority         TaskPriority @default(MEDIUM)
   completed        Boolean      @default(false)
   createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
