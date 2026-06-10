@@ -15,6 +15,7 @@ const activeTask: Task = {
   imageSize: 2048,
   imageUrl: "https://images.test/write-component-tests.png",
   priority: "HIGH",
+  tags: ["frontend", "urgent"],
   title: "Write component tests",
   updatedAt: "2026-06-01T00:00:00.000Z",
 };
@@ -29,6 +30,7 @@ const completedTask: Task = {
   imageSize: null,
   imageUrl: null,
   priority: "LOW",
+  tags: [],
   title: "Review task filters",
   updatedAt: "2026-06-02T00:00:00.000Z",
 };
@@ -44,6 +46,8 @@ describe("TaskList", () => {
     expect(screen.getByText("Cover component behavior")).toBeInTheDocument();
     expect(screen.getByText("Jun 15, 2026")).toBeInTheDocument();
     expect(screen.getByText("High")).toBeInTheDocument();
+    expect(screen.getByText("#frontend")).toBeInTheDocument();
+    expect(screen.getByText("#urgent")).toBeInTheDocument();
     expect(screen.getByText("Review task filters")).toBeInTheDocument();
     expect(screen.getByText("No due date")).toBeInTheDocument();
     expect(screen.getByText("Low")).toBeInTheDocument();

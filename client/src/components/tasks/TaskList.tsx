@@ -90,6 +90,21 @@ export function TaskList({
             </div>
 
             <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+              {task.tags.length > 0 ? (
+                <div
+                  aria-label={`${task.title} tags`}
+                  className="flex w-full flex-wrap gap-1 sm:justify-end"
+                >
+                  {task.tags.map((tag) => (
+                    <span
+                      className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700"
+                      key={tag}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
               <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-700">
                 {task.dueDate ? formatDueDate(task.dueDate) : "No due date"}
               </span>
