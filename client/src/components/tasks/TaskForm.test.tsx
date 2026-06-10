@@ -15,6 +15,7 @@ const editableTask: Task = {
   imageSize: 128,
   imageUrl: "https://images.test/existing-task.png",
   priority: "LOW",
+  tags: ["existing", "client"],
   title: "Existing task",
   updatedAt: "2026-06-01T00:00:00.000Z",
 };
@@ -45,6 +46,7 @@ describe("TaskForm", () => {
     await user.type(screen.getByLabelText("Description"), "  Validate important UI behavior  ");
     await user.type(screen.getByLabelText("Due date"), "2026-06-25");
     await user.selectOptions(screen.getByLabelText("Priority"), "HIGH");
+    await user.type(screen.getByLabelText("Tags"), "work, urgent, work,  home  ");
     await user.click(screen.getByRole("button", { name: "Add task" }));
 
     await waitFor(() => {
@@ -52,6 +54,7 @@ describe("TaskForm", () => {
         description: "Validate important UI behavior",
         dueDate: "2026-06-25",
         priority: "HIGH",
+        tags: ["work", "urgent", "home"],
         title: "Ship component tests",
       });
     });
@@ -71,6 +74,7 @@ describe("TaskForm", () => {
     expect(screen.getByLabelText("Description")).toHaveValue("Existing description");
     expect(screen.getByLabelText("Due date")).toHaveValue("2026-06-20");
     expect(screen.getByLabelText("Priority")).toHaveValue("LOW");
+    expect(screen.getByLabelText("Tags")).toHaveValue("existing, client");
     expect(screen.getByAltText("Current task image")).toHaveAttribute(
       "src",
       "https://images.test/existing-task.png"
@@ -86,6 +90,7 @@ describe("TaskForm", () => {
         description: "Existing description",
         dueDate: "2026-06-20",
         priority: "MEDIUM",
+        tags: ["existing", "client"],
         title: "Updated task",
       });
     });
@@ -118,6 +123,7 @@ describe("TaskForm", () => {
         dueDate: null,
         imageFile,
         priority: "MEDIUM",
+        tags: [],
         title: "Image task",
       });
     });
@@ -141,6 +147,7 @@ describe("TaskForm", () => {
         dueDate: "2026-06-20",
         priority: "LOW",
         removeImage: true,
+        tags: ["existing", "client"],
         title: "Existing task",
       });
     });
