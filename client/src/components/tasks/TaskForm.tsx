@@ -12,6 +12,7 @@ interface TaskFormValues {
   readonly description: string;
   readonly dueDate: string;
   readonly priority: TaskPriority;
+  readonly tags: string;
   readonly title: string;
 }
 
@@ -19,6 +20,7 @@ const emptyValues: TaskFormValues = {
   description: "",
   dueDate: "",
   priority: "MEDIUM",
+  tags: "",
   title: "",
 };
 
@@ -40,6 +42,7 @@ export function TaskForm({
   const dueDateId = useId();
   const imageId = useId();
   const priorityId = useId();
+  const tagsId = useId();
   const removeImageId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [values, setValues] = useState<TaskFormValues>(emptyValues);
@@ -75,6 +78,7 @@ export function TaskForm({
       description: task.description ?? "",
       dueDate: task.dueDate ?? "",
       priority: task.priority,
+      tags: task.tags.join(", "),
       title: task.title,
     });
   }, [task]);
@@ -96,7 +100,7 @@ export function TaskForm({
         ...(selectedImage ? { imageFile: selectedImage } : {}),
         priority: values.priority,
         ...(task && removeImage ? { removeImage: true } : {}),
-        tags: task?.tags ?? [],
+        tags: normalizeTags(values.tags),
         title,
       });
     } catch {
@@ -169,6 +173,18 @@ export function TaskForm({
         maxLength={5000}
         onChange={(event) => setValues({ ...values, description: event.target.value })}
         value={values.description}
+      />
+
+      <label className="block text-sm font-medium text-zinc-700" htmlFor={tagsId}>
+        Tags
+      </label>
+      <input
+        className="mt-1 h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+        id={tagsId}
+        onChange={(event) => setValues({ ...values, tags: event.target.value })}
+        placeholder="work, urgent, home"
+        type="text"
+        value={values.tags}
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
@@ -263,4 +279,15 @@ function clearFileInput(input: HTMLInputElement | null): void {
   if (input) {
     input.value = "";
   }
+}
+
+function normalizeTags(value: string): string[] {
+  return Array.from(
+    new Set(
+      value
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+    )
+  );
 }
